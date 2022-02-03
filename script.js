@@ -1,9 +1,9 @@
 const canvas = document.getElementsByTagName('canvas')[0];
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 const ctx = canvas.getContext('2d');
 
-
+/*
+*   CLASSES
+*/
 class Unit {
     constructor(name, hp, speed, size, x, y, sprite) {
         this.name = name;
@@ -28,17 +28,21 @@ class Unit {
     }
 }
 
-
+/*
+*   INSTANTIATE UNITS
+*/
 
 
 let test = new Unit("player", 100, 5, 32, 100, 150, './sprites/test.png');
+
+/**
+ *  ENGINE FUNCTIONS
+ */
 main();
 
 // Called first
 function main() {
     startGame();
-    console.log('heyheyhey');
-    canvas.style.backgroundColor = "blue";
 }
 
 // Called on start
@@ -49,6 +53,8 @@ function startGame() {
 
 // Called Every
 function updateGame() {
+    setCanvasDimensions(canvas); // ensures canvas dimensions == viewport
+
     // GAME AND ANIMATION LOGIC GOES HERE
     test.moveTo(300, 400);
 
@@ -66,3 +72,13 @@ function drawGame() {
 }
 
 
+/* 
+* Helper Functions
+*/
+
+function setCanvasDimensions(c) {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+    // for now
+    canvas.style.backgroundColor = "blue";
+}
