@@ -28,14 +28,15 @@ class Unit {
 }
 
 class Enemy extends Unit {
-    constructor(name, hp, speed, x, y, sprite) {
-        super(name, hp, speed, x, y, sprite);
+    constructor(name, x, y) {
+        super(name, 1, 2, x, y, './sprites/test.png');
     }
 }
 
 class Player extends Unit {
-    constructor(name, hp, speed, x, y) {
-        super(name, hp, speed, x, y, './sprites/player.png');
+    constructor(name, crosshair) {
+        super(name, 3, 30, (canvas.width / 2), (canvas.height / 2), './sprites/player.png');
+        this.rotation = this.getRotationAngle(crosshair);
     }
     addControls() {
         window.addEventListener('keydown', (e) => {
@@ -50,6 +51,21 @@ class Player extends Unit {
             }
         })
     }
+    getRotationAngle(target) {
+        return Math.atan2(
+            target.x - (this.x + 16),
+            -(target.y - (this.y+ 16)) ,
+          );
+    }
+    render() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(player.getRotationAngle(crosshairs));
+        ctx.drawImage(this.sprite, -this.sprite.width / 2, -this.sprite.height / 2);
+        ctx.strokeStyle = "red"
+        ctx.stroke();
+        ctx.restore();
+    }
 }
 
 class Crosshair {
@@ -58,8 +74,8 @@ class Crosshair {
         this.img.src = './sprites/crosshairs.png';
         this.img.width = TILE_SIZE;
         this.img.height = TILE_SIZE;
-        this.x;
-        this.y;
+        this.x = 0;
+        this.y = 0;
     }
     addToContext() {
         canvas.addEventListener('mousemove', (e) => {
@@ -72,11 +88,11 @@ class Crosshair {
     }
 }
 /*
-*   INSTANTIATE UNITS
+*   SET UP GLOBALS
 */
-
-const player = new Player('player', 100, 25, 100, 150);
-const crosshairs = new Crosshair();
+let crosshairs;
+let player;
+let lastRender = 0;
 
 
 /**
@@ -92,8 +108,11 @@ function main() {
 // Called on start
 function startGame() {
     // preload assets
+    crosshairs = new Crosshair();
+    player = new Player('player', crosshairs);
     crosshairs.addToContext();
     player.addControls();
+    
 
     // start
     updateGame();
@@ -102,17 +121,20 @@ function startGame() {
 }
 
 // Called Every
-function updateGame() {
+function updateGame(delta) {
+    const difference = delta - lastRender;
     setCanvasDimensions(canvas); // ensures canvas dimensions == viewport
 
     // GAME AND ANIMATION LOGIC GOES HERE
 
 
+
     // CHANGE THE NUMBER OF MILLISECONDS TO ADJUST FRAME RATE
-    window.setTimeout(updateGame, 20);
+    lastRender = delta;
+    window.setTimeout(updateGame, 30);
 }
 
-function drawGame() {
+function drawGame(delta) {
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     // RENDERING HAPPENS HERE
