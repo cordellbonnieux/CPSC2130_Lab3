@@ -14,6 +14,8 @@ class Unit {
         this.y = y;
         this.sprite = new Image();
         this.sprite.src = sprite;
+        this.sprite.width = size;
+        this.sprite.height = size;
     }
     render() {
         ctx.drawImage(this.sprite, this.x, this.y);
@@ -28,12 +30,23 @@ class Unit {
     }
 }
 
+class Enemy extends Unit {
+    constructor(name, hp, speed, size, x, y, sprite) {
+        super(name, hp, speed, size, x, y, sprite);
+    }
+}
+
+class Player extends Unit {
+    constructor(name, hp, speed, size, x, y) {
+        super(name, hp, speed, size, x, y, './sprites/test.png');
+    }
+}
+
 /*
 *   INSTANTIATE UNITS
 */
 
-
-let test = new Unit("player", 100, 5, 32, 100, 150, './sprites/test.png');
+let test = new Player('player', 100, 5, 32, 100, 150);
 
 /**
  *  ENGINE FUNCTIONS
@@ -49,6 +62,7 @@ function main() {
 function startGame() {
     updateGame();
     window.requestAnimationFrame(drawGame);
+    crosshairs();
 }
 
 // Called Every
@@ -67,6 +81,7 @@ function drawGame() {
 
     // RENDERING HAPPENS HERE
     test.render();
+    
 
     window.requestAnimationFrame(drawGame);
 }
@@ -80,5 +95,16 @@ function setCanvasDimensions(c) {
     c.width = window.innerWidth;
     c.height = window.innerHeight;
     // for now
-    canvas.style.backgroundColor = "blue";
+    canvas.style.backgroundColor = 'blue';
+}
+
+function crosshairs() {
+    canvas.addEventListener('mousemove', (e) => {
+        console.log(e.clientX)
+        console.log("hey")
+        // replace with image!
+        ctx.beginPath();
+        ctx.arc(e.clientX, e.clientY, 30, 0, 2 * Math.PI, false);
+        ctx.stroke();
+    })
 }
