@@ -145,12 +145,20 @@ class UI {
         document.getElementById('hp').setAttribute('value', h);
     }
     build(hp) {
+        let div = document.createElement('div');
+        div.style = 'position: absolute; top: 2%; left: 2%; width:15%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0;';
+        let text = document.createElement('p');
+        text.style = 'margin:0; padding:15px 10px 0px 5px; color: #fff;';
+        text.textContent = 'HP';
         let meter = document.createElement('meter');
         meter.setAttribute('max', `${hp}`);
         meter.setAttribute('id', 'hp');
-        meter.style = 'position: absolute; top: 2%; left: 2%;'
+        meter.style = 'height:100%; width:80%; display:inline-block;';
 
-        document.body.appendChild(meter);
+        div.append(text);
+        div.appendChild(meter);
+        document.body.appendChild(div);
+        // add other parts next
     }
 }
 
@@ -196,7 +204,7 @@ function updateGame(delta) {
     setCanvasDimensions(canvas); // ensures canvas dimensions == viewport
 
     // GAME AND ANIMATION LOGIC GOES HERE
-    ui.updateHp(player.hp);
+    
 
 
     // CHANGE THE NUMBER OF MILLISECONDS TO ADJUST FRAME RATE
@@ -211,6 +219,7 @@ function drawGame(delta) {
     player.render();
     player.drawBox();
     crosshairs.render();
+    ui.updateHp(player.hp);
     
 
     window.requestAnimationFrame(drawGame);
