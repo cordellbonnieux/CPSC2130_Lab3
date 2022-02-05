@@ -8,19 +8,19 @@ const GREEN = '#71f341';
 *   CLASSES
 */
 class Unit {
-    constructor(name, hp, speed, rotation, x, y, sprite) {
+    constructor(name, hp, speed, rotation, x, y, sprite, size) {
         this.name = name;
         this.hp = hp;
         this.speed = speed;
         this.rotation = rotation;
-        this.size = TILE_SIZE;
+        this.size = size;
         this.x = x;
         this.y = y;
         this.sprite = new Image();
         this.sprite.src = sprite;
         this.sprite.style.transition = '0.3s';
-        this.sprite.width = TILE_SIZE;
-        this.sprite.height = TILE_SIZE;
+        this.sprite.width = size;
+        this.sprite.height = size;
     }
     render() {
         ctx.drawImage(this.sprite, this.x, this.y);
@@ -47,15 +47,15 @@ class Unit {
 }
 
 class Enemy extends Unit {
-    constructor(name, x, y) {
-        super(name, 1, 2, x, y, './sprites/test.png');
+    constructor(name, hp, x, y, sprite, speed, size) {
+        super(name, hp, speed, 0, x, y, sprite, size);
     }
 }
 
 class Player extends Unit {
     constructor(name, crosshair) {
         const startingHealth = 3;
-        super(name, startingHealth, 30, 0,(canvas.width / 2), (canvas.height / 2), './sprites/player.png');
+        super(name, startingHealth, 30, 0, (canvas.width / 2), (canvas.height / 2), './sprites/player.png', TILE_SIZE);
         this.rotation = this.getRotationAngle(crosshair);
         this.time = new Date();
         this.kills = 0;
@@ -117,6 +117,33 @@ class Player extends Unit {
     }
 }
 
+class Meteor extends Enemy {
+    constructor(name, x, y) {
+        super(name, 1, x, y, './sprites/meteor.png', 1, 16);
+        this.sprite.width = TILE_SIZE / 2;
+        this.sprite.height = TILE_SIZE / 2;
+        this.direction = Math.random() * 10;
+        this.trajectory = Math.random() * 10;
+    }
+    move() {
+        if (this.y > canvas.height) {
+            this.y = -this.y;
+        }
+
+        if (this.x > canvas.width) {
+            this.x = -this.x;
+        } else if (this.x < 0) {
+            this.x = -this.x;
+        }
+
+        if (this.direction == 0) {
+            this.direction = Math.random() * 10;
+        }
+        this.x += this.direction;
+        this.y += this.speed * this.trajectory;
+    }
+}
+
 class Crosshair {
     constructor() {
         this.img = new Image();
@@ -169,6 +196,7 @@ let crosshairs;
 let player;
 let ui;
 let lastRender = 0;
+let meteors = [];
 
 
 /**
@@ -190,6 +218,7 @@ function startGame() {
     ui = new UI(player);
     crosshairs.addToContext();
     player.addControls();
+    spawnMeteors(50);
     
 
     // start
@@ -201,11 +230,14 @@ function startGame() {
 // Called Every
 function updateGame(delta) {
     const difference = delta - lastRender;
-    setCanvasDimensions(canvas); // ensures canvas dimensions == viewport
+    player.time = new Date();
+    setCanvasDimensions(canvas);
 
     // GAME AND ANIMATION LOGIC GOES HERE
-    
-
+    meteors.forEach((m) => {
+        m.move();
+        m.collision(player);
+    });
 
     // CHANGE THE NUMBER OF MILLISECONDS TO ADJUST FRAME RATE
     lastRender = delta;
@@ -220,6 +252,9 @@ function drawGame(delta) {
     player.drawBox();
     crosshairs.render();
     ui.updateHp(player.hp);
+    meteors.forEach((m) => {
+        m.render();
+    });
     
 
     window.requestAnimationFrame(drawGame);
@@ -233,4 +268,16 @@ function drawGame(delta) {
 function setCanvasDimensions(c) {
     c.width = window.innerWidth;
     c.height = window.innerHeight;
+}
+
+function spawnMeteors(n) {
+    if (meteors.length < n) {
+        let m = meteors.length;
+        for (let i = 0; i < (n - m); i++) {
+            let x = Math.random() * canvas.width * 2;
+            let y = -1000;
+            let m = new Meteor(`meteor${i}`, x, y);
+            meteors.push(m);
+        }
+    }
 }
