@@ -122,7 +122,7 @@ class Meteor extends Enemy {
         super(name, 1, x, y, './sprites/meteor.png', 1, 16);
         this.sprite.width = TILE_SIZE / 2;
         this.sprite.height = TILE_SIZE / 2;
-        this.direction = Math.random() * 10;
+        this.direction = Math.random() * (10 - (-1)) + (-1);
         this.trajectory = Math.random() * 10;
     }
     move() {
@@ -196,7 +196,9 @@ let crosshairs;
 let player;
 let ui;
 let lastRender = 0;
-let meteors = [];
+let meteors = [[],[],[],[]];
+let meteorSpawnTimer = 0;
+let meteorReplace = 1;
 
 
 /**
@@ -218,7 +220,8 @@ function startGame() {
     ui = new UI(player);
     crosshairs.addToContext();
     player.addControls();
-    spawnMeteors(50);
+    player.time = new Date();
+    spawnMeteors(50, meteors[0]);
     
 
     // start
@@ -230,13 +233,31 @@ function startGame() {
 // Called Every
 function updateGame(delta) {
     const difference = delta - lastRender;
-    player.time = new Date();
+    meteorSpawnTimer++;
     setCanvasDimensions(canvas);
 
     // GAME AND ANIMATION LOGIC GOES HERE
-    meteors.forEach((m) => {
-        m.move();
-        m.collision(player);
+    if ((meteorSpawnTimer / RATE) > 10) {
+        meteorSpawnTimer = 0;
+        switch (meteorReplace) {
+            case 0: spawnMeteors(50, meteors[0]);
+                break;
+            case 1: spawnMeteors(50, meteors[1]);
+                break;
+            case 2: spawnMeteors(50, meteors[2]);
+                break;
+            case 3: spawnMeteors(50, meteors[3]);
+                break;
+            default: pawnMeteors(50, meteors[0]);
+        }
+        meteorReplace = (meteorReplace < 3) ? meteorReplace++ : 0;
+    }
+
+    meteors.forEach((arr) => {
+        arr.forEach((m) => {
+            m.move();
+            m.collision(player);
+        })
     });
 
     // CHANGE THE NUMBER OF MILLISECONDS TO ADJUST FRAME RATE
@@ -252,8 +273,10 @@ function drawGame(delta) {
     player.drawBox();
     crosshairs.render();
     ui.updateHp(player.hp);
-    meteors.forEach((m) => {
-        m.render();
+    meteors.forEach((arr) => {
+        arr.forEach((m) => {
+            m.render();
+        })
     });
     
 
@@ -270,14 +293,12 @@ function setCanvasDimensions(c) {
     c.height = window.innerHeight;
 }
 
-function spawnMeteors(n) {
-    if (meteors.length < n) {
-        let m = meteors.length;
-        for (let i = 0; i < (n - m); i++) {
-            let x = Math.random() * canvas.width * 2;
-            let y = -1000;
-            let m = new Meteor(`meteor${i}`, x, y);
-            meteors.push(m);
-        }
+function spawnMeteors(n, arr) {
+    let l = arr.length;
+    for (let i = 0; i < (n - l); i++) {
+        let x = Math.random() * canvas.width * 2;
+        let y = -1000;
+        let m = new Meteor(`meteor${i}`, x, y);
+        arr.push(m);
     }
 }
