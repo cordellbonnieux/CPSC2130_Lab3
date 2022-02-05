@@ -7,3 +7,26 @@ html, body {
 canvas {
     cursor: none;
 }
+
+.layout {
+    border: 5px solid #71f341;
+    color: #71f341;
+    background-color: #000;
+}
+
+.menu {
+    position: absolute;
+    top: 25%;
+    left: 35%;
+    width: 30%;
+    padding: 20px;
+    text-align: center;
+}
+
+.menu * {
+
+}
+
+#startMenu {
+
+}

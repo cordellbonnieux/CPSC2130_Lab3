@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const TILE_SIZE = 32;
 const RATE = 30;
 const GREEN = '#71f341';
+const DIFFICULTY = { EASY: 10, MED: 25, HARD: 40 };
 
 /*
 *   CLASSES
@@ -55,7 +56,7 @@ class Enemy extends Unit {
 class Player extends Unit {
     constructor(name, crosshair) {
         const startingHealth = 3;
-        super(name, startingHealth, 30, 0, (canvas.width / 2), (canvas.height / 2), './sprites/player.png', TILE_SIZE);
+        super(name, startingHealth, 33.3, 0, (canvas.width / 2), (canvas.height / 2), './sprites/player.png', TILE_SIZE);
         this.rotation = this.getRotationAngle(crosshair);
         this.time = new Date();
         this.kills = 0;
@@ -122,25 +123,21 @@ class Meteor extends Enemy {
         super(name, 1, x, y, './sprites/meteor.png', 1, 16);
         this.sprite.width = TILE_SIZE / 2;
         this.sprite.height = TILE_SIZE / 2;
-        this.direction = Math.random() * (10 - (-1)) + (-1);
-        this.trajectory = Math.random() * 10;
+        this.direction = Math.random() * (10 - (-5)) + (-5);
+        this.trajectory = Math.random() * (10 - 1) + 1;
     }
     move() {
         if (this.y > canvas.height) {
-            this.y = -this.y;
+            this.y = -1000;
         }
 
-        if (this.x > canvas.width) {
-            this.x = -this.x;
-        } else if (this.x < 0) {
-            this.x = -this.x;
-        }
-
-        if (this.direction == 0) {
-            this.direction = Math.random() * 10;
-        }
-        this.x += this.direction;
         this.y += this.speed * this.trajectory;
+
+        if (this.x > canvas.width || this.x < 0) {
+            this.direction = -this.direction;
+        } 
+
+        this.x += this.speed * this.direction;
     }
 }
 
@@ -166,12 +163,12 @@ class Crosshair {
 
 class UI {
     constructor(player) {
-        this.build(player.hp);
+        this.buildHp(player.hp);
     }
     updateHp(h) {
         document.getElementById('hp').setAttribute('value', h);
     }
-    build(hp) {
+    buildHp(hp) {
         let div = document.createElement('div');
         div.style = 'position: absolute; top: 2%; left: 2%; width:15%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0;';
         let text = document.createElement('p');
@@ -185,7 +182,43 @@ class UI {
         div.append(text);
         div.appendChild(meter);
         document.body.appendChild(div);
-        // add other parts next
+    }
+    showMenu(paused) {
+        if (paused) {
+            // build pause menu
+        } else {
+            // build start menu
+            this.buildStartMenu();
+        }
+    }
+    buildStartMenu() {
+        const div = document.createElement('div');
+        div.setAttribute('class', 'layout menu');
+        div.setAttribute('id', 'startMenu')
+
+        const h1 = document.createElement('h1');
+        h1.textContent = 'Cordell Bonnieux\'s Lab 3';
+        const description = document.createElement('p');
+        description.textContent = 'This is a top-down space shooter, meteors and enemies will fly at you, shoot them for points and try to stay alive.';
+        const controls = document.createElement('p');
+        controls.textContent = 'Use W-A-S-D to move, mouse to aim and left-click to shoot.';
+
+        const h2 = document.createElement('h2');
+        h2.textContent = 'Choose your difficulty';
+        const div2 = document.createElement('div');
+        const easy = document.createElement('input');
+        easy.type = 'button';
+        easy.value = 'Easy';
+        const med = document.createElement('input');
+        med.type = 'button';
+        med.value = 'Medium';
+        const hard = document.createElement('input');
+        hard.type = 'button';
+        hard.value = 'Hard';
+        div2.append(easy, med, hard);
+
+        div.append(h1, description, controls, h2, div2);
+        document.body.appendChild(div);
     }
 }
 
@@ -199,6 +232,7 @@ let lastRender = 0;
 let meteors = [[],[],[],[]];
 let meteorSpawnTimer = 0;
 let meteorReplace = 1;
+let currentDifficulty = null;
 
 
 /**
@@ -215,14 +249,17 @@ function main() {
 function startGame() {
     // pre-load & setup
     canvas.style.backgroundColor = '#000';
+    setCanvasDimensions(canvas);
+    //
     crosshairs = new Crosshair();
     player = new Player('player', crosshairs);
     ui = new UI(player);
+    ui.showMenu(false);
+    //
     crosshairs.addToContext();
     player.addControls();
     player.time = new Date();
-    spawnMeteors(50, meteors[0]);
-    
+    spawnMeteors(1000, meteors[0]);
 
     // start
     updateGame();
@@ -240,23 +277,26 @@ function updateGame(delta) {
     if ((meteorSpawnTimer / RATE) > 10) {
         meteorSpawnTimer = 0;
         switch (meteorReplace) {
-            case 0: spawnMeteors(50, meteors[0]);
+            case 0: spawnMeteors(currentDifficulty, meteors[0]);
                 break;
-            case 1: spawnMeteors(50, meteors[1]);
+            case 1: spawnMeteors(currentDifficulty, meteors[1]);
                 break;
-            case 2: spawnMeteors(50, meteors[2]);
+            case 2: spawnMeteors(currentDifficulty, meteors[2]);
                 break;
-            case 3: spawnMeteors(50, meteors[3]);
+            case 3: spawnMeteors(currentDifficulty, meteors[3]);
                 break;
-            default: pawnMeteors(50, meteors[0]);
+            default: pawnMeteors(currentDifficulty, meteors[0]);
         }
-        meteorReplace = (meteorReplace < 3) ? meteorReplace++ : 0;
+        meteorReplace = (meteorReplace < 3) ? meteorReplace + 1 : 0;
     }
 
     meteors.forEach((arr) => {
         arr.forEach((m) => {
             m.move();
-            m.collision(player);
+            if (m.collision(player)) {
+                player.hp -= 1;
+                arr.splice(arr.indexOf(m), 1);
+            }
         })
     });
 
@@ -283,7 +323,6 @@ function drawGame(delta) {
     window.requestAnimationFrame(drawGame);
 }
 
-
 /* 
 * Helper Functions
 */
@@ -294,6 +333,7 @@ function setCanvasDimensions(c) {
 }
 
 function spawnMeteors(n, arr) {
+    //arr = [];
     let l = arr.length;
     for (let i = 0; i < (n - l); i++) {
         let x = Math.random() * canvas.width * 2;
