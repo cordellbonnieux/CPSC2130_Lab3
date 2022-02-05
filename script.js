@@ -1,6 +1,7 @@
 const canvas = document.getElementsByTagName('canvas')[0];
 const ctx = canvas.getContext('2d');
 const TILE_SIZE = 32;
+const RATE = 30;
 
 /*
 *   CLASSES
@@ -39,17 +40,43 @@ class Player extends Unit {
         this.rotation = this.getRotationAngle(crosshair);
     }
     addControls() {
-        window.addEventListener('keydown', (e) => {
+        window.addEventListener('keypress', (e) => {
+            let delays = 3;
+            const threshold = 100;
             if (e.key == 'a' || e.key == 'ArrowLeft') {
-                this.x -= 1 * this.speed;
+                if (this.x > threshold) {
+                    this.x -= 1 * this.speed;
+                    while (delays > 0) {
+                        setTimeout(()=> (this.x -= 1 * this.speed), RATE);
+                        delays--;
+                    }
+                }
             } else if (e.key == 'd' || e.key == 'ArrowRight') {
-                this.x += 1 * this.speed;
+                if (this.x < canvas.width - threshold) {
+                    this.x += 1 * this.speed;
+                    while (delays > 0) {
+                        setTimeout(()=> (this.x += 1 * this.speed), RATE);
+                        delays--;
+                    }
+                }
             } else if (e.key == 'w' || e.key == 'ArrowUp') {
-                this.y -= 1 * this.speed;
+                if (this.y > threshold) {
+                    this.y -= 1 * this.speed;
+                    while (delays > 0) {
+                        setTimeout(()=> (this.y -= 1 * this.speed), RATE);
+                        delays--;
+                    }
+                }
             } else if (e.key == 's' || e.key == 'ArrowDown') {
-                this.y += 1 * this.speed;
+                if (this.y < (canvas.height - threshold)) {
+                    this.y += 1 * this.speed;
+                    while (delays > 0) {
+                        setTimeout(()=> (this.y += 1 * this.speed), RATE);
+                        delays--;
+                    }
+                }
             }
-        })
+        });
     }
     getRotationAngle(target) {
         return Math.atan2(
@@ -62,8 +89,6 @@ class Player extends Unit {
         ctx.translate(this.x, this.y);
         ctx.rotate(player.getRotationAngle(crosshairs));
         ctx.drawImage(this.sprite, -this.sprite.width / 2, -this.sprite.height / 2);
-        ctx.strokeStyle = "red"
-        ctx.stroke();
         ctx.restore();
     }
 }
@@ -87,6 +112,7 @@ class Crosshair {
         ctx.drawImage(this.img, this.x, this.y);
     }
 }
+
 /*
 *   SET UP GLOBALS
 */
@@ -107,7 +133,7 @@ function main() {
 
 // Called on start
 function startGame() {
-    // preload assets
+    // pre-load & setup
     crosshairs = new Crosshair();
     player = new Player('player', crosshairs);
     crosshairs.addToContext();
@@ -131,7 +157,7 @@ function updateGame(delta) {
 
     // CHANGE THE NUMBER OF MILLISECONDS TO ADJUST FRAME RATE
     lastRender = delta;
-    window.setTimeout(updateGame, 30);
+    window.setTimeout(updateGame, RATE);
 }
 
 function drawGame(delta) {
