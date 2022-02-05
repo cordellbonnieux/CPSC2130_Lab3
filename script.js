@@ -2,20 +2,23 @@ const canvas = document.getElementsByTagName('canvas')[0];
 const ctx = canvas.getContext('2d');
 const TILE_SIZE = 32;
 const RATE = 30;
+const GREEN = '#71f341';
 
 /*
 *   CLASSES
 */
 class Unit {
-    constructor(name, hp, speed, x, y, sprite) {
+    constructor(name, hp, speed, rotation, x, y, sprite) {
         this.name = name;
         this.hp = hp;
         this.speed = speed;
+        this.rotation = rotation;
         this.size = TILE_SIZE;
         this.x = x;
         this.y = y;
         this.sprite = new Image();
         this.sprite.src = sprite;
+        this.sprite.style.transition = '0.3s';
         this.sprite.width = TILE_SIZE;
         this.sprite.height = TILE_SIZE;
     }
@@ -25,6 +28,21 @@ class Unit {
     moveTo (x, y) {
         this.x = x;
         this.y = y;
+    }
+    drawBox() {
+        const diff = 14;
+        ctx.save();
+        ctx.beginPath();
+        ctx.lineWidth = '3';
+        ctx.strokeStyle = GREEN;
+        ctx.rect(this.x - diff, this.y - diff, this.size, this.size);
+        ctx.stroke();
+        ctx.restore();
+    }
+    collision(target) {
+        let x = (target.x > this.x) ? target.x - this.x : this.x - target.x;
+        let y = (target.y > this.y) ? target.y - this.y : this.y - target.y;
+        return (x <= 16 && y <= 16) ? true : false;
     }
 }
 
@@ -36,8 +54,12 @@ class Enemy extends Unit {
 
 class Player extends Unit {
     constructor(name, crosshair) {
-        super(name, 3, 30, (canvas.width / 2), (canvas.height / 2), './sprites/player.png');
+        const startingHealth = 3;
+        super(name, startingHealth, 30, 0,(canvas.width / 2), (canvas.height / 2), './sprites/player.png');
         this.rotation = this.getRotationAngle(crosshair);
+        this.time = new Date();
+        this.kills = 0;
+        this.startingHealth = startingHealth;
     }
     addControls() {
         window.addEventListener('keypress', (e) => {
@@ -79,10 +101,12 @@ class Player extends Unit {
         });
     }
     getRotationAngle(target) {
-        return Math.atan2(
+        const newRotation = Math.atan2(
             target.x - (this.x + 16),
-            -(target.y - (this.y+ 16)) ,
+            -(target.y - (this.y + 16)) ,
           );
+        this.rotation = newRotation;
+        return newRotation;
     }
     render() {
         ctx.save();
@@ -113,11 +137,29 @@ class Crosshair {
     }
 }
 
+class UI {
+    constructor(player) {
+        this.build(player.hp);
+    }
+    updateHp(h) {
+        document.getElementById('hp').setAttribute('value', h);
+    }
+    build(hp) {
+        let meter = document.createElement('meter');
+        meter.setAttribute('max', `${hp}`);
+        meter.setAttribute('id', 'hp');
+        meter.style = 'position: absolute; top: 2%; left: 2%;'
+
+        document.body.appendChild(meter);
+    }
+}
+
 /*
 *   SET UP GLOBALS
 */
 let crosshairs;
 let player;
+let ui;
 let lastRender = 0;
 
 
@@ -134,8 +176,10 @@ function main() {
 // Called on start
 function startGame() {
     // pre-load & setup
+    canvas.style.backgroundColor = '#000';
     crosshairs = new Crosshair();
     player = new Player('player', crosshairs);
+    ui = new UI(player);
     crosshairs.addToContext();
     player.addControls();
     
@@ -152,7 +196,7 @@ function updateGame(delta) {
     setCanvasDimensions(canvas); // ensures canvas dimensions == viewport
 
     // GAME AND ANIMATION LOGIC GOES HERE
-
+    ui.updateHp(player.hp);
 
 
     // CHANGE THE NUMBER OF MILLISECONDS TO ADJUST FRAME RATE
@@ -165,6 +209,7 @@ function drawGame(delta) {
 
     // RENDERING HAPPENS HERE
     player.render();
+    player.drawBox();
     crosshairs.render();
     
 
@@ -179,6 +224,4 @@ function drawGame(delta) {
 function setCanvasDimensions(c) {
     c.width = window.innerWidth;
     c.height = window.innerHeight;
-    // for now
-    canvas.style.backgroundColor = '#000';
 }
