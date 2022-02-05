@@ -207,12 +207,15 @@ class UI {
         h2.textContent = 'Choose your difficulty';
         const div2 = document.createElement('div');
         const easy = document.createElement('input');
+        easy.setAttribute('class', 'difficulty');
         easy.type = 'button';
         easy.value = 'Easy';
         const med = document.createElement('input');
+        med.setAttribute('class', 'difficulty');
         med.type = 'button';
         med.value = 'Medium';
         const hard = document.createElement('input');
+        hard.setAttribute('class', 'difficulty');
         hard.type = 'button';
         hard.value = 'Hard';
         div2.append(easy, med, hard);
@@ -258,8 +261,29 @@ function startGame() {
     //
     crosshairs.addToContext();
     player.addControls();
-    player.time = new Date();
-    spawnMeteors(1000, meteors[0]);
+    player.time = new Date(); // this will need altering
+
+    document.body.querySelectorAll('.difficulty').forEach((b) => {
+        b.addEventListener('click', (e) => {
+            switch (b.value) {
+                case 'Easy': currentDifficulty = DIFFICULTY.EASY;
+                    player.hp = 6
+                    // set ui total health to be 6 too
+                    // hide menu start game
+                    break;
+                case 'Medium': currentDifficulty = DIFFICULTY.MED;
+                    player.hp = 4
+                    // set ui total health to b
+                    // hide menu start game
+                    break;
+                case 'Hard': currentDifficulty = DIFFICULTY.HARD;
+                    player.hp = 2;
+                    // set ui total health to b
+                    // hide menu start game
+                    break;
+            }
+        })
+    })
 
     // start
     updateGame();
@@ -310,7 +334,6 @@ function drawGame(delta) {
 
     // RENDERING HAPPENS HERE
     player.render();
-    player.drawBox();
     crosshairs.render();
     ui.updateHp(player.hp);
     meteors.forEach((arr) => {
