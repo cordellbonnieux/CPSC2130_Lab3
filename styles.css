@@ -4,7 +4,7 @@ html, body {
     margin:0;
 }
 
-canvas {
+.noCursor {
     cursor: none;
 }
 
@@ -21,12 +21,4 @@ canvas {
     width: 30%;
     padding: 20px;
     text-align: center;
-}
-
-.menu * {
-
-}
-
-#startMenu {
-
 }

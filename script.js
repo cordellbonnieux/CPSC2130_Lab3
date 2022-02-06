@@ -61,6 +61,7 @@ class Player extends Unit {
         this.time = new Date();
         this.kills = 0;
         this.startingHealth = startingHealth;
+        this.play = false;
     }
     addControls() {
         window.addEventListener('keypress', (e) => {
@@ -159,6 +160,10 @@ class Crosshair {
     render() {
         ctx.drawImage(this.img, this.x, this.y);
     }
+    hideCursor(bool) {
+        const cursor = bool ? 'noCursor' : '';
+        canvas.setAttribute('class', cursor);
+    }
 }
 
 class UI {
@@ -167,6 +172,9 @@ class UI {
     }
     updateHp(h) {
         document.getElementById('hp').setAttribute('value', h);
+    }
+    updateMaxHp(h) {
+        document.getElementById('hp').setAttribute('max', h);
     }
     buildHp(hp) {
         let div = document.createElement('div');
@@ -189,6 +197,40 @@ class UI {
         } else {
             // build start menu
             this.buildStartMenu();
+            document.body.querySelectorAll('.difficulty').forEach((b) => {
+                b.addEventListener('click', (e) => {
+                    switch (b.value) {
+                        case 'Easy': currentDifficulty = DIFFICULTY.EASY;
+                            player.hp = 6
+                            this.updateMaxHp(player.hp)
+                            this.updateHp(player.hp);
+                            // set ui total health to be 6 too
+                            this.showStartMenu(false);
+                            player.play = true;
+                            player.time = new Date();
+                            crosshairs.hideCursor(true);
+                            break;
+                        case 'Medium': currentDifficulty = DIFFICULTY.MED;
+                            player.hp = 6
+                            this.updateMaxHp(player.hp)
+                            this.updateHp(player.hp);
+                            this.showStartMenu(false);
+                            player.play = true;
+                            player.time = new Date();
+                            crosshairs.hideCursor(true);
+                            break;
+                        case 'Hard': currentDifficulty = DIFFICULTY.HARD;
+                            player.hp = 6
+                            this.updateMaxHp(player.hp)
+                            this.updateHp(player.hp);
+                            this.showStartMenu(false);
+                            player.play = true;
+                            player.time = new Date();
+                            crosshairs.hideCursor(true);
+                            break;
+                    }
+                })
+            })
         }
     }
     buildStartMenu() {
@@ -222,6 +264,19 @@ class UI {
 
         div.append(h1, description, controls, h2, div2);
         document.body.appendChild(div);
+    }
+    showStartMenu(bool) {
+        const value = bool ? 'block' : 'none';
+        document.getElementById('startMenu').style.display = value;
+    }
+    dead() {
+        const div = document.createElement('div');
+        div.setAttribute('class', 'menu layout');
+        div.setAttribute('id', 'dead');
+
+        const h1 = document.createElement('h1');
+        h1.textContent = 'You are dead';
+
     }
 }
 
@@ -261,29 +316,6 @@ function startGame() {
     //
     crosshairs.addToContext();
     player.addControls();
-    player.time = new Date(); // this will need altering
-
-    document.body.querySelectorAll('.difficulty').forEach((b) => {
-        b.addEventListener('click', (e) => {
-            switch (b.value) {
-                case 'Easy': currentDifficulty = DIFFICULTY.EASY;
-                    player.hp = 6
-                    // set ui total health to be 6 too
-                    // hide menu start game
-                    break;
-                case 'Medium': currentDifficulty = DIFFICULTY.MED;
-                    player.hp = 4
-                    // set ui total health to b
-                    // hide menu start game
-                    break;
-                case 'Hard': currentDifficulty = DIFFICULTY.HARD;
-                    player.hp = 2;
-                    // set ui total health to b
-                    // hide menu start game
-                    break;
-            }
-        })
-    })
 
     // start
     updateGame();
@@ -294,35 +326,44 @@ function startGame() {
 // Called Every
 function updateGame(delta) {
     const difference = delta - lastRender;
-    meteorSpawnTimer++;
     setCanvasDimensions(canvas);
 
-    // GAME AND ANIMATION LOGIC GOES HERE
-    if ((meteorSpawnTimer / RATE) > 10) {
-        meteorSpawnTimer = 0;
-        switch (meteorReplace) {
-            case 0: spawnMeteors(currentDifficulty, meteors[0]);
-                break;
-            case 1: spawnMeteors(currentDifficulty, meteors[1]);
-                break;
-            case 2: spawnMeteors(currentDifficulty, meteors[2]);
-                break;
-            case 3: spawnMeteors(currentDifficulty, meteors[3]);
-                break;
-            default: pawnMeteors(currentDifficulty, meteors[0]);
+    if (player.hp > 0 && player.play) {
+        meteorSpawnTimer++;
+        if ((meteorSpawnTimer / RATE) > 10) {
+            meteorSpawnTimer = 0;
+            switch (meteorReplace) {
+                case 0: spawnMeteors(currentDifficulty, meteors[0]);
+                    break;
+                case 1: spawnMeteors(currentDifficulty, meteors[1]);
+                    break;
+                case 2: spawnMeteors(currentDifficulty, meteors[2]);
+                    break;
+                case 3: spawnMeteors(currentDifficulty, meteors[3]);
+                    break;
+                default: pawnMeteors(currentDifficulty, meteors[0]);
+            }
+            meteorReplace = (meteorReplace < 3) ? meteorReplace + 1 : 0;
         }
-        meteorReplace = (meteorReplace < 3) ? meteorReplace + 1 : 0;
+    
+        meteors.forEach((arr) => {
+            arr.forEach((m) => {
+                m.move();
+                if (m.collision(player)) {
+                    player.hp -= 1;
+                    arr.splice(arr.indexOf(m), 1);
+                }
+            })
+        });
+    } else {
+        ui.dead();
+        player.play = false;
+        meteors.forEach((arr) => {
+            arr = [];
+        })
+        console.log(meteors);
     }
 
-    meteors.forEach((arr) => {
-        arr.forEach((m) => {
-            m.move();
-            if (m.collision(player)) {
-                player.hp -= 1;
-                arr.splice(arr.indexOf(m), 1);
-            }
-        })
-    });
 
     // CHANGE THE NUMBER OF MILLISECONDS TO ADJUST FRAME RATE
     lastRender = delta;
@@ -332,16 +373,16 @@ function updateGame(delta) {
 function drawGame(delta) {
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // RENDERING HAPPENS HERE
-    player.render();
-    crosshairs.render();
-    ui.updateHp(player.hp);
-    meteors.forEach((arr) => {
-        arr.forEach((m) => {
-            m.render();
-        })
-    });
-    
+    if (player.play) {
+        player.render();
+        crosshairs.render();
+        ui.updateHp(player.hp);
+        meteors.forEach((arr) => {
+            arr.forEach((m) => {
+                m.render();
+            })
+        });
+    }
 
     window.requestAnimationFrame(drawGame);
 }
@@ -360,7 +401,7 @@ function spawnMeteors(n, arr) {
     let l = arr.length;
     for (let i = 0; i < (n - l); i++) {
         let x = Math.random() * canvas.width * 2;
-        let y = -1000;
+        let y = -500;
         let m = new Meteor(`meteor${i}`, x, y);
         arr.push(m);
     }
