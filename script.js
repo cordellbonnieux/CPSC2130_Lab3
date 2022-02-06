@@ -210,39 +210,25 @@ class UI {
             this.buildStartMenu();
             document.body.querySelectorAll('.difficulty').forEach((b) => {
                 b.addEventListener('click', (e) => {
+                    meteors = [[], [], [], []];
                     switch (b.value) {
                         case 'Easy': currentDifficulty = DIFFICULTY.EASY;
-                            player.hp = 6
-                            this.updateMaxHp(player.hp)
-                            this.updateHp(player.hp);
-                            // set ui total health to be 6 too
-                            this.showStartMenu(false);
-                            player.dead = false;
-                            player.play = true;
-                            player.time = new Date();
-                            crosshairs.hideCursor(true);
+                            player.hp = 6;
                             break;
                         case 'Medium': currentDifficulty = DIFFICULTY.MED;
-                            player.hp = 6
-                            this.updateMaxHp(player.hp)
-                            this.updateHp(player.hp);
-                            this.showStartMenu(false);
-                            player.play = true;
-                            player.dead = false;
-                            player.time = new Date();
-                            crosshairs.hideCursor(true);
+                            player.hp = 4;
                             break;
                         case 'Hard': currentDifficulty = DIFFICULTY.HARD;
-                            player.hp = 6
-                            this.updateMaxHp(player.hp)
-                            this.updateHp(player.hp);
-                            this.showStartMenu(false);
-                            player.dead = false;
-                            player.play = true;
-                            player.time = new Date();
-                            crosshairs.hideCursor(true);
+                            player.hp = 2;
                             break;
                     }
+                    this.updateMaxHp(player.hp)
+                    this.updateHp(player.hp);
+                    this.showStartMenu(false);
+                    player.dead = false;
+                    player.play = true;
+                    player.time = new Date();
+                    crosshairs.hideCursor(true);
                 })
             })
         }
@@ -371,7 +357,6 @@ function updateGame(delta) {
         player.checkForDeath();
         meteorSpawnTimer++;
         if ((meteorSpawnTimer / RATE) > 10) {
-            console.log('go');
             meteorSpawnTimer = 0;
             switch (meteorReplace) {
                 case 0: spawnMeteors(currentDifficulty, meteors[0]);
