@@ -56,12 +56,13 @@ class Enemy extends Unit {
 class Player extends Unit {
     constructor(name, crosshair) {
         const startingHealth = 3;
-        super(name, startingHealth, 33.3, 0, (canvas.width / 2), (canvas.height / 2), './sprites/player.png', TILE_SIZE);
+        super(name, startingHealth, 13.33, 0, (canvas.width / 2), (canvas.height / 2), './sprites/player.png', TILE_SIZE);
         this.rotation = this.getRotationAngle(crosshair);
         this.time = new Date();
         this.kills = 0;
         this.startingHealth = startingHealth;
         this.play = false;
+        this.dead = false;
     }
     addControls() {
         window.addEventListener('keypress', (e) => {
@@ -71,7 +72,7 @@ class Player extends Unit {
                 if (this.x > threshold) {
                     this.x -= 1 * this.speed;
                     while (delays > 0) {
-                        setTimeout(()=> (this.x -= 1 * this.speed), RATE);
+                        setTimeout(()=> (this.x -= 1 * this.speed), RATE/this.speed);
                         delays--;
                     }
                 }
@@ -79,7 +80,7 @@ class Player extends Unit {
                 if (this.x < canvas.width - threshold) {
                     this.x += 1 * this.speed;
                     while (delays > 0) {
-                        setTimeout(()=> (this.x += 1 * this.speed), RATE);
+                        setTimeout(()=> (this.x += 1 * this.speed), RATE/this.speed);
                         delays--;
                     }
                 }
@@ -87,7 +88,7 @@ class Player extends Unit {
                 if (this.y > threshold) {
                     this.y -= 1 * this.speed;
                     while (delays > 0) {
-                        setTimeout(()=> (this.y -= 1 * this.speed), RATE);
+                        setTimeout(()=> (this.y -= 1 * this.speed), RATE/this.speed);
                         delays--;
                     }
                 }
@@ -95,7 +96,7 @@ class Player extends Unit {
                 if (this.y < (canvas.height - threshold)) {
                     this.y += 1 * this.speed;
                     while (delays > 0) {
-                        setTimeout(()=> (this.y += 1 * this.speed), RATE);
+                        setTimeout(()=> (this.y += 1 * this.speed), RATE/this.speed);
                         delays--;
                     }
                 }
@@ -116,6 +117,15 @@ class Player extends Unit {
         ctx.rotate(player.getRotationAngle(crosshairs));
         ctx.drawImage(this.sprite, -this.sprite.width / 2, -this.sprite.height / 2);
         ctx.restore();
+    }
+    checkForDeath() {
+        if (player.hp <= 0) {
+            player.dead = true;
+            player.play = false;
+        } else {
+            player.dead = false;
+            player.play = true;
+        }
     }
 }
 
@@ -169,6 +179,7 @@ class Crosshair {
 class UI {
     constructor(player) {
         this.buildHp(player.hp);
+        this.deathScreen = false;
     }
     updateHp(h) {
         document.getElementById('hp').setAttribute('value', h);
@@ -206,6 +217,7 @@ class UI {
                             this.updateHp(player.hp);
                             // set ui total health to be 6 too
                             this.showStartMenu(false);
+                            player.dead = false;
                             player.play = true;
                             player.time = new Date();
                             crosshairs.hideCursor(true);
@@ -216,6 +228,7 @@ class UI {
                             this.updateHp(player.hp);
                             this.showStartMenu(false);
                             player.play = true;
+                            player.dead = false;
                             player.time = new Date();
                             crosshairs.hideCursor(true);
                             break;
@@ -224,6 +237,7 @@ class UI {
                             this.updateMaxHp(player.hp)
                             this.updateHp(player.hp);
                             this.showStartMenu(false);
+                            player.dead = false;
                             player.play = true;
                             player.time = new Date();
                             crosshairs.hideCursor(true);
@@ -269,14 +283,38 @@ class UI {
         const value = bool ? 'block' : 'none';
         document.getElementById('startMenu').style.display = value;
     }
-    dead() {
+    buildDeathScreen() {
+        this.deathScreen = true;
         const div = document.createElement('div');
         div.setAttribute('class', 'menu layout');
         div.setAttribute('id', 'dead');
 
         const h1 = document.createElement('h1');
-        h1.textContent = 'You are dead';
+        h1.textContent = 'You are dead.';
 
+        const btn = document.createElement('input');
+        btn.type = 'button';
+        btn.value = 'Play Again';
+        btn.addEventListener('click', (e) => {
+            player.dead = false;
+            this.deathScreen = false;
+            this.showDeathScreen(false);
+            this.showStartMenu(true);
+        });
+
+        div.append(h1, btn)
+        document.body.appendChild(div);
+        crosshairs.hideCursor(false);
+        this.showDeathScreen(false);
+    }
+    showDeathScreen(bool) {
+        const val = bool ? 'block' : 'none';
+        this.deathScreen = bool;
+        crosshairs.hideCursor(false);
+        document.getElementById('dead').style.display = val;
+    }
+    dead() {
+        this.showDeathScreen(true);
     }
 }
 
@@ -312,6 +350,7 @@ function startGame() {
     crosshairs = new Crosshair();
     player = new Player('player', crosshairs);
     ui = new UI(player);
+    ui.buildDeathScreen()
     ui.showMenu(false);
     //
     crosshairs.addToContext();
@@ -328,9 +367,11 @@ function updateGame(delta) {
     const difference = delta - lastRender;
     setCanvasDimensions(canvas);
 
-    if (player.hp > 0 && player.play) {
+    if (player.play) {
+        player.checkForDeath();
         meteorSpawnTimer++;
         if ((meteorSpawnTimer / RATE) > 10) {
+            console.log('go');
             meteorSpawnTimer = 0;
             switch (meteorReplace) {
                 case 0: spawnMeteors(currentDifficulty, meteors[0]);
@@ -345,7 +386,6 @@ function updateGame(delta) {
             }
             meteorReplace = (meteorReplace < 3) ? meteorReplace + 1 : 0;
         }
-    
         meteors.forEach((arr) => {
             arr.forEach((m) => {
                 m.move();
@@ -355,13 +395,12 @@ function updateGame(delta) {
                 }
             })
         });
-    } else {
+    } else if (player.dead) {
         ui.dead();
         player.play = false;
         meteors.forEach((arr) => {
             arr = [];
         })
-        console.log(meteors);
     }
 
 
@@ -401,7 +440,7 @@ function spawnMeteors(n, arr) {
     let l = arr.length;
     for (let i = 0; i < (n - l); i++) {
         let x = Math.random() * canvas.width * 2;
-        let y = -500;
+        let y = -200;
         let m = new Meteor(`meteor${i}`, x, y);
         arr.push(m);
     }
