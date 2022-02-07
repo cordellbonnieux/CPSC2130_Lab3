@@ -63,6 +63,7 @@ class Player extends Unit {
         this.startingHealth = startingHealth;
         this.play = false;
         this.dead = false;
+        this.newGame;
     }
     addControls() {
         window.addEventListener('keypress', (e) => {
@@ -229,6 +230,7 @@ class UI {
                     player.play = true;
                     player.time = new Date();
                     crosshairs.hideCursor(true);
+                    player.newGame = true;
                 })
             })
         }
@@ -356,7 +358,8 @@ function updateGame(delta) {
     if (player.play) {
         player.checkForDeath();
         meteorSpawnTimer++;
-        if ((meteorSpawnTimer / RATE) > 10) {
+        if (((meteorSpawnTimer / RATE) > 10) || player.newGame) {
+            player.newGame = false;
             meteorSpawnTimer = 0;
             switch (meteorReplace) {
                 case 0: spawnMeteors(currentDifficulty, meteors[0]);
