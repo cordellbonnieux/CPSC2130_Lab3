@@ -22,3 +22,20 @@ html, body {
     padding: 20px;
     text-align: center;
 }
+
+input[type="button"] {
+    background: transparent;
+    color: #71f341;
+    margin:10px;
+    padding:10px 20px;
+    border:2px solid #71f341;
+    cursor: pointer;
+    box-shadow: 1px 2px 1px #71f341;
+    transition:0.1s;
+    font-weight:700;
+}
+
+input[type="button"]:hover {
+    background-color:#71f341;
+    color:#000;
+}
