@@ -194,9 +194,27 @@ class UI {
         player.aliveFor = -Math.floor(((t - now) % (1000 * 60)) / 1000);
         document.getElementById('time').textContent = player.aliveFor;
     }
+    updateScore(s) {
+        document.getElementById('score').textContent = s;
+    }
+    buildScore() {
+        let div = document.createElement('div');
+        div.style = 'position: absolute; top: 2%; right: 2%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0; color: #fff;';
+        
+        let text = document.createElement('p');
+        text.style = 'margin:0; padding:15px 10px 0px 5px;';
+        text.textContent = 'Score:';
+
+        let time = document.createElement('p');
+        time.setAttribute('id', 'score');
+        time.style = 'height:100%; width:80%; display:inline-block;';
+
+        div.append(text, time);
+        document.body.appendChild(div);
+    }
     buildTime() {
         let div = document.createElement('div');
-        div.style = 'position: absolute; top: 2%; right: 2%; width:15%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0; color: #fff;';
+        div.style = 'position: absolute; top: 2%; right: 6%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0; color: #fff;';
         
         let text = document.createElement('p');
         text.style = 'margin:0; padding:15px 10px 0px 5px;';
@@ -213,9 +231,12 @@ class UI {
         let div = document.createElement('div');
         div.style = 'position: absolute; top: 2%; left: 2%; width:15%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0;';
         let text = document.createElement('p');
-        text.style = 'margin:0; padding:15px 10px 0px 5px; color: #fff;';
         text.textContent = 'HP';
         let meter = document.createElement('meter');
+        meter.setAttribute('min', `0`);
+        meter.setAttribute('low', `${hp / 4}`);
+        meter.setAttribute('optimum', `${hp / 2}`);
+        meter.setAttribute('high', `${(hp / 4) * 3}`);
         meter.setAttribute('max', `${hp}`);
         meter.setAttribute('id', 'hp');
         meter.style = 'height:100%; width:80%; display:inline-block;';
@@ -363,6 +384,7 @@ function startGame() {
     ui.buildDeathScreen()
     ui.showMenu(false);
     ui.buildTime();
+    ui.buildScore();
     //
     crosshairs.addToContext();
     player.addControls();
@@ -380,6 +402,7 @@ function updateGame(delta) {
 
     if (player.play) {
         ui.updateTime(player.time);
+        ui.updateScore(player.kills);
         player.checkForDeath();
         meteorSpawnTimer++;
         if (((meteorSpawnTimer / RATE) > 10) || player.newGame) {
@@ -403,6 +426,7 @@ function updateGame(delta) {
                 m.move();
                 if (m.collision(player)) {
                     player.hp -= 1;
+                    player.kills += 1;
                     arr.splice(arr.indexOf(m), 1);
                 }
             })
