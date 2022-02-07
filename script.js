@@ -58,12 +58,13 @@ class Player extends Unit {
         const startingHealth = 3;
         super(name, startingHealth, 13.33, 0, (canvas.width / 2), (canvas.height / 2), './sprites/player.png', TILE_SIZE);
         this.rotation = this.getRotationAngle(crosshair);
-        this.time = new Date();
+        this.time = new Date().getTime();
         this.kills = 0;
         this.startingHealth = startingHealth;
         this.play = false;
         this.dead = false;
         this.newGame;
+        this.aliveFor;
     }
     addControls() {
         window.addEventListener('keypress', (e) => {
@@ -188,6 +189,26 @@ class UI {
     updateMaxHp(h) {
         document.getElementById('hp').setAttribute('max', h);
     }
+    updateTime(t) {
+        let now = new Date().getTime();
+        player.aliveFor = -Math.floor(((t - now) % (1000 * 60)) / 1000);
+        document.getElementById('time').textContent = player.aliveFor;
+    }
+    buildTime() {
+        let div = document.createElement('div');
+        div.style = 'position: absolute; top: 2%; right: 2%; width:15%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0; color: #fff;';
+        
+        let text = document.createElement('p');
+        text.style = 'margin:0; padding:15px 10px 0px 5px;';
+        text.textContent = 'Time:';
+
+        let time = document.createElement('p');
+        time.setAttribute('id', 'time');
+        time.style = 'height:100%; width:80%; display:inline-block;';
+
+        div.append(text, time);
+        document.body.appendChild(div);
+    }
     buildHp(hp) {
         let div = document.createElement('div');
         div.style = 'position: absolute; top: 2%; left: 2%; width:15%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0;';
@@ -231,6 +252,7 @@ class UI {
                     player.time = new Date();
                     crosshairs.hideCursor(true);
                     player.newGame = true;
+                    player.aliveFor = 0;
                 })
             })
         }
@@ -340,6 +362,7 @@ function startGame() {
     ui = new UI(player);
     ui.buildDeathScreen()
     ui.showMenu(false);
+    ui.buildTime();
     //
     crosshairs.addToContext();
     player.addControls();
@@ -356,6 +379,7 @@ function updateGame(delta) {
     setCanvasDimensions(canvas);
 
     if (player.play) {
+        ui.updateTime(player.time);
         player.checkForDeath();
         meteorSpawnTimer++;
         if (((meteorSpawnTimer / RATE) > 10) || player.newGame) {
