@@ -104,6 +104,12 @@ class Player extends Unit {
                 }
             }
         });
+        window.addEventListener('mousedown', (e) => {
+            if (e.button == 0) {
+                console.log('fire!');
+                projectiles.push(new Projectile(crosshairs.x, crosshairs.y));
+            }
+        })
     }
     getRotationAngle(target) {
         const newRotation = Math.atan2(
@@ -128,6 +134,45 @@ class Player extends Unit {
             player.dead = false;
             player.play = true;
         }
+    }
+}
+
+class Projectile {
+    constructor(targetX, targetY) {
+        this.x = player.x;
+        this.y = player.y;
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.directionX = (targetX > this.x) ? 1 : -1;
+        this.directionY = (targetY > this.y) ? 1 : -1;
+        this.w = 3;
+        this. h = 3;
+        this.speed = 1;
+        this.sprite;
+    }
+    render() {
+        ctx.beginPath();
+        ctx.fillStyle = '#fff';
+        this.updatePOS();
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
+    updatePOS() {
+        if (this.x != this.targetX && this.y != this.targetY) {
+            if (this.x != this.targetX) {
+                this.x += this.speed * this.directionX;
+            }
+            if (this.y != this.targetY) {
+                this.y += this.speed * this.directionY;
+            }
+        } else {
+            // keep going?
+        }
+
+    }
+    collision(target) {
+        let x = (target.x > this.x) ? target.x - this.x : this.x - target.x;
+        let y = (target.y > this.y) ? target.y - this.y : this.y - target.y;
+        return (x <= 16 && y <= 16) ? true : false;
     }
 }
 
@@ -181,6 +226,10 @@ class Crosshair {
 class UI {
     constructor(player) {
         this.buildHp(player.hp);
+        this.buildDeathScreen();
+        this.buildTopRightContainer();
+        this.buildScore();
+        this.buildTime();
         this.deathScreen = false;
     }
     updateHp(h) {
@@ -197,10 +246,15 @@ class UI {
     updateScore(s) {
         document.getElementById('score').textContent = s;
     }
-    buildScore() {
+    buildTopRightContainer () {
         let div = document.createElement('div');
+        div.setAttribute('id','topRight');
         div.style = 'position: absolute; top: 2%; right: 2%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0; color: #fff;';
-        
+        document.body.appendChild(div);
+    }
+    buildScore() {
+        let div = document.getElementById('topRight');
+
         let text = document.createElement('p');
         text.style = 'margin:0; padding:15px 10px 0px 5px;';
         text.textContent = 'Score:';
@@ -210,11 +264,9 @@ class UI {
         time.style = 'height:100%; width:80%; display:inline-block;';
 
         div.append(text, time);
-        document.body.appendChild(div);
     }
     buildTime() {
-        let div = document.createElement('div');
-        div.style = 'position: absolute; top: 2%; right: 6%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0; color: #fff;';
+        let div = document.getElementById('topRight');
         
         let text = document.createElement('p');
         text.style = 'margin:0; padding:15px 10px 0px 5px;';
@@ -225,7 +277,6 @@ class UI {
         time.style = 'height:100%; width:80%; display:inline-block;';
 
         div.append(text, time);
-        document.body.appendChild(div);
     }
     buildHp(hp) {
         let div = document.createElement('div');
@@ -357,6 +408,7 @@ let player;
 let ui;
 let lastRender = 0;
 let meteors = [[],[],[],[]];
+let projectiles = [];
 let meteorSpawnTimer = 0;
 let meteorReplace = 1;
 let currentDifficulty = null;
@@ -381,10 +433,7 @@ function startGame() {
     crosshairs = new Crosshair();
     player = new Player('player', crosshairs);
     ui = new UI(player);
-    ui.buildDeathScreen()
     ui.showMenu(false);
-    ui.buildTime();
-    ui.buildScore();
     //
     crosshairs.addToContext();
     player.addControls();
@@ -421,6 +470,9 @@ function updateGame(delta) {
             }
             meteorReplace = (meteorReplace < 3) ? meteorReplace + 1 : 0;
         }
+        projectiles.forEach((p) => {
+            p.render();
+        });
         meteors.forEach((arr) => {
             arr.forEach((m) => {
                 m.move();
@@ -437,6 +489,7 @@ function updateGame(delta) {
         meteors.forEach((arr) => {
             arr = [];
         })
+        projectiles = [];
     }
 
 
