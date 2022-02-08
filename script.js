@@ -146,7 +146,7 @@ class Projectile {
         this.run = this.setRun();
         this.w = 8;
         this. h = 8;
-        this.speed = 3;
+        this.speed = 2;
         this.color = GREEN;
         this.sprite;
     }
@@ -198,7 +198,7 @@ class Projectile {
     collision(target) {
         let x = (target.x > this.x) ? target.x - this.x : this.x - target.x;
         let y = (target.y > this.y) ? target.y - this.y : this.y - target.y;
-        return (x <= 16 && y <= 16) ? true : false;
+        return (x <= (this.h * 4) && y <= (this.h * 4)) ? true : false;
     }
     slope() {
         let num = (this.y - this.targetY);
