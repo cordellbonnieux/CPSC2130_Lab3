@@ -106,7 +106,6 @@ class Player extends Unit {
         });
         canvas.addEventListener('mousedown', (e) => {
             if (e.button == 0) {
-                console.log('fire!');
                 projectiles.push(new Projectile(crosshairs.x, crosshairs.y));
             }
         })
@@ -145,35 +144,81 @@ class Projectile {
         this.targetY = targetY;
         this.directionX = (targetX > this.x) ? 1 : -1;
         this.directionY = (targetY > this.y) ? 1 : -1;
-        this.w = 30;
-        this. h = 30;
+        this.w = 8;
+        this. h = 8;
         this.speed = 1;
         this.color = GREEN;
         this.sprite;
     }
     render() {
         this.updatePOS();
+        console.log(this.slope());
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.w, this.h);
     }
     updatePOS() {
         if (this.x != this.targetX && this.y != this.targetY) {
             if (this.x != this.targetX) {
-                this.x += this.speed * this.directionX;
+                this.x += this.speed * this.run();
             }
             if (this.y != this.targetY) {
-                this.y += this.speed * this.directionY;
+                this.y += this.speed * this.rise();
             }
         } else {
-            this.x += this.speed * this.directionX;
-            this.y += this.speed * this.directionY;
+            this.x += this.speed * this.run();
+            this.y += this.speed * this.rise();
+        }
+    }
+    reduce(rise, run) {
+        rise = Math.floor(rise * 10);
+        run = Math.floor(run * 10);
+        let divisor, counter = 0;
+        while (counter < 10) {
+            let riseIsInt = Number(rise % counter) === (rise % counter) && (rise % counter) % 1 === 0;
+            let runIsInt = Number(run % counter) === (run % counter) && (run % counter) % 1 === 0;
+            if (riseIsInt && runIsInt) {
+                divisor = counter;
+            }
+            counter++;
         }
 
+        if (rise > 0) {
+            while (rise > 10) {
+                rise = Math.floor(rise / divisor);
+            }
+        } else if (rise < 0) {
+            while (rise < -10) {
+                rise = Math.floor(rise / divisor);
+            }
+        }
+
+        if (run > 0) {
+            while (run > 10) {
+                run = Math.floor(run / divisor);
+            }
+        } else if (run < 0) {
+            while (run < -10) {
+                run = Math.floor(run / divisor);
+            }
+        }
+
+        return [-rise, -run]
     }
     collision(target) {
         let x = (target.x > this.x) ? target.x - this.x : this.x - target.x;
         let y = (target.y > this.y) ? target.y - this.y : this.y - target.y;
         return (x <= 16 && y <= 16) ? true : false;
+    }
+    slope() {
+        let num = (this.y - this.targetY);
+        let denom = (this.x - this.targetX);
+        return this.reduce(num, denom);
+    }
+    rise() {
+        return this.slope()[0];
+    }
+    run() {
+        return this.slope()[1];
     }
 }
 
