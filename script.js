@@ -142,32 +142,23 @@ class Projectile {
         this.y = player.y;
         this.targetX = targetX;
         this.targetY = targetY;
-        this.directionX = (targetX > this.x) ? 1 : -1;
-        this.directionY = (targetY > this.y) ? 1 : -1;
+        this.rise = this.setRise();
+        this.run = this.setRun();
         this.w = 8;
         this. h = 8;
-        this.speed = 1;
+        this.speed = 3;
         this.color = GREEN;
         this.sprite;
     }
     render() {
         this.updatePOS();
-        console.log(this.slope());
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.w, this.h);
     }
     updatePOS() {
-        if (this.x != this.targetX && this.y != this.targetY) {
-            if (this.x != this.targetX) {
-                this.x += this.speed * this.run();
-            }
-            if (this.y != this.targetY) {
-                this.y += this.speed * this.rise();
-            }
-        } else {
-            this.x += this.speed * this.run();
-            this.y += this.speed * this.rise();
-        }
+        console.log(this.rise, this.run)
+        this.x += this.speed * this.run;
+        this.y += this.speed * this.rise;
     }
     reduce(rise, run) {
         rise = Math.floor(rise * 10);
@@ -184,21 +175,21 @@ class Projectile {
 
         if (rise > 0) {
             while (rise > 10) {
-                rise = Math.floor(rise / divisor);
+                rise = rise / divisor;
             }
         } else if (rise < 0) {
             while (rise < -10) {
-                rise = Math.floor(rise / divisor);
+                rise = rise / divisor;
             }
         }
 
         if (run > 0) {
             while (run > 10) {
-                run = Math.floor(run / divisor);
+                run = run / divisor;
             }
         } else if (run < 0) {
             while (run < -10) {
-                run = Math.floor(run / divisor);
+                run = run / divisor;
             }
         }
 
@@ -214,11 +205,13 @@ class Projectile {
         let denom = (this.x - this.targetX);
         return this.reduce(num, denom);
     }
-    rise() {
-        return this.slope()[0];
+    setRise() {
+        let r = this.slope()[0]
+        return r;
     }
-    run() {
-        return this.slope()[1];
+    setRun() {
+        let r = this.slope()[1]
+        return r;
     }
 }
 
