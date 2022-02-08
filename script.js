@@ -104,7 +104,7 @@ class Player extends Unit {
                 }
             }
         });
-        window.addEventListener('mousedown', (e) => {
+        canvas.addEventListener('mousedown', (e) => {
             if (e.button == 0) {
                 console.log('fire!');
                 projectiles.push(new Projectile(crosshairs.x, crosshairs.y));
@@ -145,15 +145,15 @@ class Projectile {
         this.targetY = targetY;
         this.directionX = (targetX > this.x) ? 1 : -1;
         this.directionY = (targetY > this.y) ? 1 : -1;
-        this.w = 3;
-        this. h = 3;
+        this.w = 30;
+        this. h = 30;
         this.speed = 1;
+        this.color = GREEN;
         this.sprite;
     }
     render() {
-        ctx.beginPath();
-        ctx.fillStyle = '#fff';
         this.updatePOS();
+        ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.w, this.h);
     }
     updatePOS() {
@@ -165,7 +165,8 @@ class Projectile {
                 this.y += this.speed * this.directionY;
             }
         } else {
-            // keep going?
+            this.x += this.speed * this.directionX;
+            this.y += this.speed * this.directionY;
         }
 
     }
@@ -426,18 +427,17 @@ function main() {
 
 // Called on start
 function startGame() {
-    // pre-load & setup
+    // canvas set up
     canvas.style.backgroundColor = '#000';
     setCanvasDimensions(canvas);
-    //
+    // set up game objects
     crosshairs = new Crosshair();
     player = new Player('player', crosshairs);
     ui = new UI(player);
     ui.showMenu(false);
-    //
+    // add user input 
     crosshairs.addToContext();
     player.addControls();
-
     // start
     updateGame();
     window.requestAnimationFrame(drawGame);
@@ -470,9 +470,6 @@ function updateGame(delta) {
             }
             meteorReplace = (meteorReplace < 3) ? meteorReplace + 1 : 0;
         }
-        projectiles.forEach((p) => {
-            p.render();
-        });
         meteors.forEach((arr) => {
             arr.forEach((m) => {
                 m.move();
@@ -481,6 +478,15 @@ function updateGame(delta) {
                     player.kills += 1;
                     arr.splice(arr.indexOf(m), 1);
                 }
+                projectiles.forEach((p) => {
+                    if (p.collision(m)) {
+                        arr.splice(arr.indexOf(m), 1);
+                        projectiles.splice(projectiles.indexOf(p), 1);
+                        player.kills += 1;
+                    } else if (p.x > canvas.width || p.x < 0 || p.y > canvas.height || p.y < 0) {
+                        projectiles.splice(projectiles.indexOf(p), 1);
+                    }
+                });
             })
         });
     } else if (player.dead) {
@@ -510,6 +516,9 @@ function drawGame(delta) {
                 m.render();
             })
         });
+        projectiles.forEach((p) => {
+            p.render();
+        });
     }
 
     window.requestAnimationFrame(drawGame);
@@ -525,7 +534,6 @@ function setCanvasDimensions(c) {
 }
 
 function spawnMeteors(n, arr) {
-    //arr = [];
     let l = arr.length;
     for (let i = 0; i < (n - l); i++) {
         let x = Math.random() * canvas.width * 2;
