@@ -19,7 +19,7 @@ class Unit {
         this.y = y;
         this.sprite = new Image();
         this.sprite.src = sprite;
-        this.sprite.style.transition = '0.3s';
+        //this.sprite.style.transition = '0.3s';
         this.sprite.width = size;
         this.sprite.height = size;
     }
@@ -156,44 +156,61 @@ class Projectile {
         ctx.fillRect(this.x, this.y, this.w, this.h);
     }
     updatePOS() {
-        console.log(this.rise, this.run)
-        this.x += this.speed * this.run;
-        this.y += this.speed * this.rise;
+        this.x += this.speed * this.rise;
+        this.y += this.speed * this.run;
+    }
+    /*
+    *   reduce() function taken from:
+    *   https://www.geeksforgeeks.org/reduce-a-fraction-to-its-simplest-form-by-using-javascript/
+    */
+    reduceGFG(numer,denomin){
+        let gcd = function gcd(a,b){
+          return b ? gcd(b, a % b) : a;
+        };
+        gcd = gcd(numer,denomin);
+        console.log(numer/gcd,denomin/gcd);
+        return [numer/gcd, denomin/gcd];
     }
     reduce(rise, run) {
-        rise = Math.floor(rise * 10);
-        run = Math.floor(run * 10);
-        let divisor, counter = 0;
-        while (counter < 10) {
-            let riseIsInt = Number(rise % counter) === (rise % counter) && (rise % counter) % 1 === 0;
-            let runIsInt = Number(run % counter) === (run % counter) && (run % counter) % 1 === 0;
-            if (riseIsInt && runIsInt) {
-                divisor = counter;
-            }
-            counter++;
-        }
+        rise = Math.floor(rise);
+        run = Math.floor(run);
+        
+        let divisor = 10;
+        let counter = 0;
+        let cap = 10;
+        
+        rise = this.reduceGFG(rise, run)[0];
+        rise = this.reduceGFG(rise, run)[1];
 
         if (rise > 0) {
-            while (rise > 10) {
+            while (rise > cap) {
                 rise = rise / divisor;
+                rise++;
             }
         } else if (rise < 0) {
-            while (rise < -10) {
+            while (rise < -cap) {
                 rise = rise / divisor;
+                rise++;
             }
         }
 
         if (run > 0) {
-            while (run > 10) {
+            while (run > cap) {
                 run = run / divisor;
+                run++;
             }
         } else if (run < 0) {
-            while (run < -10) {
+            while (run < -cap) {
                 run = run / divisor;
+                run++;
             }
         }
 
-        return [-rise, -run]
+        rise = -rise;
+        run = -run;
+
+        console.log(rise, run)
+        return [rise, run]
     }
     collision(target) {
         let x = (target.x > this.x) ? target.x - this.x : this.x - target.x;
