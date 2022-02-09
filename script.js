@@ -142,11 +142,14 @@ class Projectile {
         this.y = player.y;
         this.targetX = targetX;
         this.targetY = targetY;
-        this.rise = this.setRise();
-        this.run = this.setRun();
+        this.angle = this.getAngle();
+        this.velocity = {
+            x: Math.cos(this.angle),
+            y: Math.sin(this.angle)
+        }
         this.w = 8;
         this. h = 8;
-        this.speed = 2;
+        this.speed = 15;
         this.color = GREEN;
         this.sprite;
     }
@@ -156,79 +159,19 @@ class Projectile {
         ctx.fillRect(this.x, this.y, this.w, this.h);
     }
     updatePOS() {
-        this.x += this.speed * this.rise;
-        this.y += this.speed * this.run;
+        this.x = this.x + this.velocity.x * this.speed;
+        this.y = this.y + this.velocity.y * this.speed;
     }
-    /*
-    *   reduce() function taken from:
-    *   https://www.geeksforgeeks.org/reduce-a-fraction-to-its-simplest-form-by-using-javascript/
-    */
-    reduceGFG(numer,denomin){
-        let gcd = function gcd(a,b){
-          return b ? gcd(b, a % b) : a;
-        };
-        gcd = gcd(numer,denomin);
-        console.log(numer/gcd,denomin/gcd);
-        return [numer/gcd, denomin/gcd];
-    }
-    reduce(rise, run) {
-        rise = Math.floor(rise);
-        run = Math.floor(run);
-        
-        let divisor = 10;
-        let counter = 0;
-        let cap = 10;
-        
-        rise = this.reduceGFG(rise, run)[0];
-        rise = this.reduceGFG(rise, run)[1];
-
-        if (rise > 0) {
-            while (rise > cap) {
-                rise = rise / divisor;
-                rise++;
-            }
-        } else if (rise < 0) {
-            while (rise < -cap) {
-                rise = rise / divisor;
-                rise++;
-            }
-        }
-
-        if (run > 0) {
-            while (run > cap) {
-                run = run / divisor;
-                run++;
-            }
-        } else if (run < 0) {
-            while (run < -cap) {
-                run = run / divisor;
-                run++;
-            }
-        }
-
-        rise = -rise;
-        run = -run;
-
-        console.log(rise, run)
-        return [rise, run]
+    getAngle() {
+        return Math.atan2(
+            (this.targetY - this.y),
+            (this.targetX - this.x)
+        );
     }
     collision(target) {
         let x = (target.x > this.x) ? target.x - this.x : this.x - target.x;
         let y = (target.y > this.y) ? target.y - this.y : this.y - target.y;
         return (x <= (this.h * 4) && y <= (this.h * 4)) ? true : false;
-    }
-    slope() {
-        let num = (this.y - this.targetY);
-        let denom = (this.x - this.targetX);
-        return this.reduce(num, denom);
-    }
-    setRise() {
-        let r = this.slope()[0]
-        return r;
-    }
-    setRun() {
-        let r = this.slope()[1]
-        return r;
     }
 }
 
