@@ -479,6 +479,7 @@ function updateGame(delta) {
                 if (m.collision(player)) {
                     player.hp -= 1;
                     player.kills += 1;
+                    ui.updateTopCenterText('Hull Damaged!');
                     arr.splice(arr.indexOf(m), 1);
                 }
                 projectiles.forEach((p) => {
@@ -486,6 +487,7 @@ function updateGame(delta) {
                         arr.splice(arr.indexOf(m), 1);
                         projectiles.splice(projectiles.indexOf(p), 1);
                         player.kills += 1;
+                        ui.updateTopCenterText('Asteroid Destroyed!');
                     } else if (p.x > canvas.width || p.x < 0 || p.y > canvas.height || p.y < 0) {
                         projectiles.splice(projectiles.indexOf(p), 1);
                     }
@@ -494,6 +496,7 @@ function updateGame(delta) {
         });
     } else if (player.dead) {
         ui.dead();
+        ui.updateTopCenterText('');
         player.play = false;
         meteors.forEach((arr) => {
             arr = [];

@@ -5,21 +5,12 @@ html, body {
     color: #71f341;
 }
 
-p {
-    /*
-    color: #71f341;
-    */
-}
-
 .noCursor {
     cursor: none;
 }
 
 .layout {
     border: 5px solid #71f341;
-    /*
-    color: #71f341;
-    */
     background-color: #000;
 }
 
@@ -53,8 +44,10 @@ p {
 }
 
 #topCenter {
-    width: 20%;
-    left:40%;
+    left:35%;
+    padding: 0 20px;
+    width:30%;
+    text-align: center;
 }
 
 #topRight {
@@ -85,7 +78,7 @@ input[type="button"]:hover {
 
 meter {
     border:2px solid #71f341;
-    margin: 10px 0 0 10px;
+    margin: 5px 10px;
     border-radius: 0;
     box-sizing: border-box;
     height:100%;
