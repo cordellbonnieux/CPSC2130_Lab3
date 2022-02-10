@@ -225,11 +225,15 @@ class Crosshair {
 class UI {
     constructor(player) {
         this.buildHp(player.hp);
+        this.buildTopCenterText();
         this.buildDeathScreen();
         this.buildTopRightContainer();
         this.buildScore();
         this.buildTime();
         this.deathScreen = false;
+    }
+    updateTopCenterText(t) {
+        document.getElementById('centerText').textContent = t;
     }
     updateHp(h) {
         document.getElementById('hp').setAttribute('value', h);
@@ -268,9 +272,11 @@ class UI {
     }
     buildHp(hp) {
         let div = document.createElement('div');
-        div.style = 'position: absolute; top: 2%; left: 2%; width:15%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0;';
+        div.setAttribute('id', 'topLeft');
+
         let text = document.createElement('p');
         text.textContent = 'HP';
+
         let meter = document.createElement('meter');
         meter.setAttribute('min', `0`);
         meter.setAttribute('low', `${hp / 4}`);
@@ -278,10 +284,19 @@ class UI {
         meter.setAttribute('high', `${(hp / 4) * 3}`);
         meter.setAttribute('max', `${hp}`);
         meter.setAttribute('id', 'hp');
-        meter.style = 'height:100%; width:80%; display:inline-block;';
 
         div.append(text);
         div.appendChild(meter);
+        document.body.appendChild(div);
+    }
+    buildTopCenterText() {
+        let div = document.createElement('div');
+        div.setAttribute('id', 'topCenter');
+
+        let text = document.createElement('h2');
+        text.setAttribute('id', 'centerText');
+
+        div.appendChild(text);
         document.body.appendChild(div);
     }
     showMenu(paused) {
@@ -313,6 +328,7 @@ class UI {
                     crosshairs.hideCursor(true);
                     player.newGame = true;
                     player.aliveFor = 0;
+                    ui.updateTopCenterText('Prepare to die!');
                 })
             })
         }
