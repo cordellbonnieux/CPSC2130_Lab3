@@ -3,7 +3,7 @@ const ctx = canvas.getContext('2d');
 const TILE_SIZE = 32;
 const RATE = 30;
 const GREEN = '#71f341';
-const DIFFICULTY = { EASY: 10, MED: 25, HARD: 40 };
+const DIFFICULTY = { EASY: 50, MED: 75, HARD: 100 };
 
 /*
 *   CLASSES
@@ -248,33 +248,22 @@ class UI {
     buildTopRightContainer () {
         let div = document.createElement('div');
         div.setAttribute('id','topRight');
-        div.style = 'position: absolute; top: 2%; right: 2%; height:5%; display:flex; flex-wrap:no-wrap; justify-content:center; margin:0; color: #fff;';
         document.body.appendChild(div);
     }
     buildScore() {
         let div = document.getElementById('topRight');
-
         let text = document.createElement('p');
-        text.style = 'margin:0; padding:15px 10px 0px 5px;';
         text.textContent = 'Score:';
-
         let time = document.createElement('p');
         time.setAttribute('id', 'score');
-        time.style = 'height:100%; width:80%; display:inline-block;';
-
         div.append(text, time);
     }
     buildTime() {
         let div = document.getElementById('topRight');
-        
         let text = document.createElement('p');
-        text.style = 'margin:0; padding:15px 10px 0px 5px;';
         text.textContent = 'Time:';
-
         let time = document.createElement('p');
         time.setAttribute('id', 'time');
-        time.style = 'height:100%; width:80%; display:inline-block;';
-
         div.append(text, time);
     }
     buildHp(hp) {
