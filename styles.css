@@ -26,11 +26,12 @@ html, body {
 #topLeft, #topRight, #topCenter {
     position: absolute;
     top: 2%;
-    height:5%;
-    display:flex;
-    flex-wrap:nowrap;
-    justify-content:center;
-    margin:0;
+    height: 5%;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    margin: 0;
+    font-size: 1.4em;
 }
 
 #topRight p, #topLeft p {
@@ -40,15 +41,23 @@ html, body {
 
 #topLeft {
     left: 2%;
-    width: 15%;
+    min-width: 15%;
 }
 
 #topCenter {
-    left:35%;
+    left: 35%;
     padding: 0 20px;
-    width:30%;
+    width: 30%;
     text-align: center;
 }
+
+@media screen and (max-width: 520px) {
+    #topCenter {
+        top: 10%;
+        font-size: 1.2em;
+        left: 33%
+    }
+} 
 
 #topRight {
     right: 2%; 
@@ -83,4 +92,5 @@ meter {
     box-sizing: border-box;
     height:100%;
     width:80%;
+    min-width: 100px;
 }

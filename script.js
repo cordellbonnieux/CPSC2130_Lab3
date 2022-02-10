@@ -19,7 +19,6 @@ class Unit {
         this.y = y;
         this.sprite = new Image();
         this.sprite.src = sprite;
-        //this.sprite.style.transition = '0.3s';
         this.sprite.width = size;
         this.sprite.height = size;
     }
@@ -341,7 +340,7 @@ class UI {
         const h1 = document.createElement('h1');
         h1.textContent = 'Cordell Bonnieux\'s Lab 3';
         const description = document.createElement('p');
-        description.textContent = 'This is a top-down space shooter, meteors and enemies will fly at you, shoot them for points and try to stay alive.';
+        description.textContent = 'This is a top-down space shooter, asteroids will fly at you, shoot them for points and try to stay alive.';
         const controls = document.createElement('p');
         controls.textContent = 'Use W-A-S-D to move, mouse to aim and left-click to shoot.';
 
