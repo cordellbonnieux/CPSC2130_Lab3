@@ -1,6 +1,6 @@
-CPSC 2130 - Lab 3
+CPSC 2130 - Lab 3 & 4
 
-Top down twin stick style space shooter, meteors come at you, stay alive and blast 'em!
+Top down twin stick style space shooter, asteroids come at you, stay alive and blast 'em!
 
 Controls:
 Move Up: W

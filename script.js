@@ -57,13 +57,17 @@ class Player extends Unit {
         const startingHealth = 3;
         super(name, startingHealth, 13.33, 0, (canvas.width / 2), (canvas.height / 2), './sprites/player.png', TILE_SIZE);
         this.rotation = this.getRotationAngle(crosshair);
-        this.time = new Date().getTime();
         this.kills = 0;
         this.startingHealth = startingHealth;
         this.play = false;
         this.dead = false;
         this.newGame;
-        this.aliveFor;
+        this.time = new Date().getTime();
+        this.aliveFor = {
+            mins: 0,
+            secs: 0,
+            total: ''
+        };
     }
     addControls() {
         window.addEventListener('keypress', (e) => {
@@ -240,10 +244,13 @@ class UI {
     updateMaxHp(h) {
         document.getElementById('hp').setAttribute('max', h);
     }
-    updateTime(t) {
+    updateTime(p) {
         let now = new Date().getTime();
-        player.aliveFor = -Math.floor(((t - now) % (1000 * 60)) / 1000);
-        document.getElementById('time').textContent = player.aliveFor;
+        p.aliveFor.mins = (now - p.time > 0) ? Math.round(((now - p.time) / 1000) / 120) : 0;
+        p.aliveFor.secs = -Math.floor(((p.time - now) % (1000 * 60)) / 1000);
+        p.aliveFor.secs = p.aliveFor.secs == 60 ? 0 : p.aliveFor.secs;
+        p.aliveFor.total = `${p.aliveFor.mins > 9 ? p.aliveFor.mins : '0' + p.aliveFor.mins}:${p.aliveFor.secs > 9 ? p.aliveFor.secs : '0' + p.aliveFor.secs}`;
+        document.getElementById('time').textContent = p.aliveFor.total;
     }
     updateScore(s) {
         document.getElementById('score').textContent = s;
@@ -326,7 +333,6 @@ class UI {
                     player.time = new Date();
                     crosshairs.hideCursor(true);
                     player.newGame = true;
-                    player.aliveFor = 0;
                     ui.updateTopCenterText('Prepare to die!');
                 })
             })
@@ -452,7 +458,7 @@ function updateGame(delta) {
     setCanvasDimensions(canvas);
 
     if (player.play) {
-        ui.updateTime(player.time);
+        ui.updateTime(player);
         ui.updateScore(player.kills);
         player.checkForDeath();
         meteorSpawnTimer++;
