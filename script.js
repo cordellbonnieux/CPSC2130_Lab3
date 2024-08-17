@@ -344,7 +344,7 @@ class UI {
         div.setAttribute('id', 'startMenu')
 
         const h1 = document.createElement('h1');
-        h1.textContent = 'Cordell Bonnieux\'s Lab 3';
+        h1.textContent = 'Astroid Blaster';
         const description = document.createElement('p');
         description.textContent = 'This is a top-down space shooter, asteroids will fly at you, shoot them for points and try to stay alive.';
         const controls = document.createElement('p');
